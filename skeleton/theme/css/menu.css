@@ -1,0 +1,29 @@
+menu.menu-container {
+    padding-bottom: 1.5rem;
+}
+
+.menu {
+    display: flex;
+    list-style: none;
+    justify-content: start;
+}
+
+.menu li:first-child {
+    padding-right: 1rem; 
+}
+
+.menu li:not(:first-child) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border-left: 1px dotted #d4381d;
+}
+
+.menu li a {
+    color: #d4381d;
+    background-image: linear-gradient(transparent, transparent 5px, transparent 5px, transparent);
+}
+
+.menu li a:hover {
+    color: #d4381d;
+    background-image: linear-gradient(transparent, transparent 5px, #d4381d 5px, #d4381d);
+}

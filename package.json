@@ -1,0 +1,48 @@
+{
+    "name": "@etermind/alex",
+    "version": "0.5.0",
+    "description": "Alex is a easy and small static site generator",
+    "main": "dist/lib/cli.js",
+    "bin": {
+        "alex": "./dist/lib/cli.js"
+    },
+    "scripts": {
+        "prebuild": "npx rimraf dist",
+        "build": "npx tsc --module commonjs",
+        "install": "npm run build",
+        "watch": "npx tsc-watch --module commonjs",
+        "lint": "npx tslint --project tsconfig.json -t codeFrame 'lib/**/*.ts' 'test/**/*.ts'"
+    },
+    "keywords": [
+        "static site generator",
+        "easy",
+        "simple"
+    ],
+    "author": "Corentin Ribeyre <corentin.ribeyre@etermind.com>",
+    "license": "MIT",
+    "dependencies": {
+        "@types/lodash": "^4.14.155",
+        "@types/node": "^11.15.14",
+        "@types/nunjucks": "^3.1.3",
+        "@types/rimraf": "^3.0.0",
+        "@types/showdown": "^1.9.3",
+        "commander": "^5.1.0",
+        "fs-extra": "^9.0.1",
+        "http-server": "^0.12.3",
+        "lodash": "^4.17.15",
+        "markdown-yaml-metadata-parser": "^2.0.5",
+        "nunjucks": "^3.2.1",
+        "rimraf": "^3",
+        "showdown": "^1.9.1",
+        "yaml": "^1.10.0"
+    },
+    "devDependencies": {
+        "ts-node": "7.x",
+        "tsc-watch": "1.x",
+        "tslint": "^5.20.1",
+        "tslint-config-airbnb": "^5.11.2",
+        "tslint-language-service": "^0.9.9",
+        "typedoc": "^0.15.8",
+        "typescript": "^3.9.5"
+    }
+}

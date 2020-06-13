@@ -1,0 +1,34 @@
+title:
+    fr: 'Mon titre'
+    en: 'Your title'
+
+config:
+    defaultLang: 'en'
+    langs: 
+        - en
+        - fr
+    meta:
+        description: 
+            fr: 'Ma super description dans la balise meta'
+            en: 'My awesome description in the meta tag'
+        keywords: 
+            - awesome 
+            - site 
+            - alex 
+    favicon: '/assets/imgs/favicon'
+
+menu:
+    home: 
+        name: 
+            fr: 'Accueil'
+            en: 'Home'
+        external: false
+        default: true
+    code:
+        name:
+            fr: 'Code'
+            en: 'Code'
+        external: true
+        default: false 
+        link: 'http://github.com/cocophotos'
+        target: '_blank'

@@ -1,0 +1,11 @@
+<menu class="menu-container">
+    <ul class="menu h3">
+        {% for key, value in menu %}
+            {% if value.external %}
+        <li><a href='{{value.link}}' target="{{value.target}}">{{value.name[lang]}}</a></li>
+            {% else %}
+        <li><a href='/{{lang}}/{{key}}.htm'>{{value.name[lang]}}</a></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</menu>
