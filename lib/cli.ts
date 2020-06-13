@@ -14,18 +14,15 @@ async function main() {
             await Actions.Generate(cmd.input, cmd.output);
         });
 
-    /* Commander.program
-        .command('email-templates')
-        .option('-t, --templates <value>',
-            'Name of the template to create (can be repeated for multiple templates)',
-            collect, [])
-        .option('-f, --file <value>',
-            'Path to the HTML template')
+    Commander.program
+        .command('serve')
+        .option('-p, --path <value>',
+            'Path to the generated site directory')
+        .option('-P, --port <value>',
+            'Port to listen to', '3000')
         .action(async (cmd: any) => {
-            console.log(`Generating email templates: ${cmd.templates}`);
-            await generateEmailTemplates(cmd.templates, cmd.file);
+            await Actions.Serve(cmd.path, parseInt(cmd.port, 10) || 3000);
         });
-    */
 
     await Commander.program.parseAsync(process.argv);
 }

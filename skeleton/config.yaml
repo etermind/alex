@@ -15,8 +15,6 @@ config:
             - awesome 
             - site 
             - alex 
-    favicon: '/assets/imgs/favicon'
-
 menu:
     home: 
         name: 
