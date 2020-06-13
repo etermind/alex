@@ -23,6 +23,10 @@
     ],
     "author": "Corentin Ribeyre <corentin.ribeyre@etermind.com>",
     "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/etermind/alex"
+    },
     "dependencies": {
         "@types/finalhandler": "^1.1.0",
         "@types/lodash": "^4.14.155",
