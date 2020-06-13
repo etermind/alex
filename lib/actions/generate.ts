@@ -10,6 +10,7 @@ import FSExtra from 'fs-extra';
 import * as E from '../errors';
 
 const Converter = new Showdown.Converter(); // tslint:disable-line
+Converter.setFlavor('github');
 
 /**
  * Render template
@@ -129,25 +130,18 @@ async function generatePages(lang: string, globalConfig: any, input: string, out
  * @param output The output directory
  */
 async function copyIndexFile(globalConfig: any, output: string) {
-    const { config = {}, menu } = globalConfig;
-    const { defaultLang, langs = [] } = config;
+    const { config = {} } = globalConfig;
+    const { defaultLang, langs = [], defaultPage } = config;
 
     if (!defaultLang || langs.find((l :string) => l === defaultLang) === undefined) {
         throw E.DEFAULT_LANG_NOT_FOUND;
     }
 
-    const items = Object.entries(menu);
-
-    const defaultMenuItem = items.find(([, v]: [string, any]) => {
-        return v.default;
-    });
-
-    if (!defaultMenuItem) {
+    if (!defaultPage) {
         throw E.DEFAULT_MENU_ITEM_NOT_FOUND;
     }
 
-    const [defaultItemKey] = defaultMenuItem;
-    const path = Path.join(output, defaultLang, `${defaultItemKey}.htm`);
+    const path = Path.join(output, defaultLang, `${defaultPage}.htm`);
     const destPath = Path.join(output, 'index.htm');
     FSExtra.copySync(path, destPath);
 }
