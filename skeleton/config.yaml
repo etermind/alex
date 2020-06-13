@@ -3,10 +3,11 @@ title:
     en: 'Your title'
 
 config:
-    defaultLang: 'en'
     langs: 
         - en
         - fr
+    defaultLang: 'en'
+    defaultPage: 'home'
     meta:
         description: 
             fr: 'Ma super description dans la balise meta'
@@ -15,20 +16,16 @@ config:
             - awesome 
             - site 
             - alex 
-    favicon: '/assets/imgs/favicon'
-
 menu:
     home: 
         name: 
             fr: 'Accueil'
             en: 'Home'
         external: false
-        default: true
     code:
         name:
             fr: 'Code'
             en: 'Code'
         external: true
-        default: false 
         link: 'http://github.com/cocophotos'
         target: '_blank'

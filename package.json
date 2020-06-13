@@ -6,10 +6,13 @@
     "bin": {
         "alex": "./dist/lib/cli.js"
     },
+    "engines": {
+        "node": ">=12"
+    },
     "scripts": {
         "prebuild": "npx rimraf dist",
         "build": "npx tsc --module commonjs",
-        "install": "npm run build",
+        "prepare": "npm run build",
         "watch": "npx tsc-watch --module commonjs",
         "lint": "npx tslint --project tsconfig.json -t codeFrame 'lib/**/*.ts' 'test/**/*.ts'"
     },
@@ -21,18 +24,21 @@
     "author": "Corentin Ribeyre <corentin.ribeyre@etermind.com>",
     "license": "MIT",
     "dependencies": {
+        "@types/finalhandler": "^1.1.0",
         "@types/lodash": "^4.14.155",
         "@types/node": "^11.15.14",
         "@types/nunjucks": "^3.1.3",
         "@types/rimraf": "^3.0.0",
+        "@types/serve-static": "^1.13.4",
         "@types/showdown": "^1.9.3",
         "commander": "^5.1.0",
+        "finalhandler": "^1.1.2",
         "fs-extra": "^9.0.1",
-        "http-server": "^0.12.3",
         "lodash": "^4.17.15",
         "markdown-yaml-metadata-parser": "^2.0.5",
         "nunjucks": "^3.2.1",
         "rimraf": "^3",
+        "serve-static": "^1.14.1",
         "showdown": "^1.9.1",
         "yaml": "^1.10.0"
     },

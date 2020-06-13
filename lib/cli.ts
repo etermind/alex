@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 import Commander from 'commander';
 import * as Actions from './actions';
 
@@ -8,24 +10,24 @@ async function main() {
     Commander.program
         .version('v1.0.0')
         .command('generate')
-        .option('-i, --input <director>', 'Input directory')
-        .option('-o, --output <director>', 'Output directory')
+        .requiredOption('-i, --input <director>', 'Input directory')
+        .requiredOption('-o, --output <director>', 'Output directory')
         .action(async (cmd: any) => {
+            console.log(`Generate your website from ${cmd.input}, please wait...`);
             await Actions.Generate(cmd.input, cmd.output);
+            console.log(`Website successfully generated in ${cmd.output}`);
         });
 
-    /* Commander.program
-        .command('email-templates')
-        .option('-t, --templates <value>',
-            'Name of the template to create (can be repeated for multiple templates)',
-            collect, [])
-        .option('-f, --file <value>',
-            'Path to the HTML template')
+    Commander.program
+        .command('serve')
+        .requiredOption('-p, --path <value>',
+            'Path to the generated site directory')
+        .requiredOption('-P, --port <value>',
+            'Port to listen to', '3000')
         .action(async (cmd: any) => {
-            console.log(`Generating email templates: ${cmd.templates}`);
-            await generateEmailTemplates(cmd.templates, cmd.file);
+            const port = parseInt(cmd.port, 10) || 3000;
+            await Actions.Serve(cmd.path, port);
         });
-    */
 
     await Commander.program.parseAsync(process.argv);
 }
