@@ -12,8 +12,7 @@
     "scripts": {
         "prebuild": "npx rimraf dist",
         "build": "npx tsc --module commonjs",
-        "preinstall": "npm run build",
-        "prepublish": "npm run build",
+        "prepare": "npm run build",
         "watch": "npx tsc-watch --module commonjs",
         "lint": "npx tslint --project tsconfig.json -t codeFrame 'lib/**/*.ts' 'test/**/*.ts'"
     },

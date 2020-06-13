@@ -18,4 +18,5 @@ export default async function serve(path: string, port: number = 3000) {
 
     // Listen
     server.listen(port);
+    console.log(`Please browse to http://localhost:${port} to visualize your website`);
 }
