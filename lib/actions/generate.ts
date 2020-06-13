@@ -26,6 +26,8 @@ async function renderTemplate(path: string, template: string, info: any): Promis
 
 /**
  * Extract markdown
+ * @param input The input path
+ * @return An object with the metadata and all the markdown content
  */
 async function extractMarkdown(input: string): Promise<any> {
     const list = FS.readdirSync(input);
@@ -51,6 +53,18 @@ async function extractMarkdown(input: string): Promise<any> {
 
 /**
  * Generate a page
+ *
+ * - Check the menu item
+ * - Exit if the item has external set to true
+ * - Check the markdown path and extract the content
+ * - Check if the template exists and render the HTML
+ * - Write the final HTML page in the output directory
+ *
+ * @param lang The current language
+ * @param menuItem The current menu item key
+ * @param globalConfig The config
+ * @param input The input path
+ * @param output The output path
  */
 async function generatePage(
     lang: string,
@@ -84,7 +98,6 @@ async function generatePage(
         menu: Object.entries(globalConfig.menu),
         content: contentInfo,
         title: globalConfig.title[lang] || '',
-        keywords: (config.keywords || []).join(', '),
         meta: _.merge(
             {},
             config.meta,
@@ -108,6 +121,14 @@ async function generatePage(
 
 /**
  * Generate the pages
+ * - Create the directory for the current lang
+ * - Get the menu items
+ * - Generate one page per item
+ *
+ * @param lang The current lang
+ * @param globalConfig The config
+ * @param input The input path
+ * @param output The output path
  */
 async function generatePages(lang: string, globalConfig: any, input: string, output: string) {
     const pathWithLang = Path.join(output, lang);
@@ -147,14 +168,12 @@ async function copyIndexFile(globalConfig: any, output: string) {
 }
 
 /**
- * Copy files
- * @param globalConfig The parsed YAML config
+ * Copy static files: user files and theme files
+ *
  * @param input The input directory
  * @param output The output directory
  */
-async function copyFiles(globalConfig: any, input: string, output: string) {
-    await copyIndexFile(globalConfig, output);
-
+async function copyFiles(input: string, output: string) {
     ['css', 'fonts', 'imgs', 'js'].forEach((d: string) => {
         try {
             FSExtra.copySync(Path.join(input, 'theme', d), Path.join(output, 'assets', d));
@@ -173,7 +192,11 @@ async function copyFiles(globalConfig: any, input: string, output: string) {
 }
 
 /**
- * Generate the static site
+ * Generate the static site.
+ * - Check the input and output directory
+ * - Read the YAML config
+ * - Iterate over the languages list and generate the pages
+ *
  * @param input The input directory
  * @param output The output directory
  */
@@ -207,5 +230,6 @@ export default async function generate(input: string, output: string) {
     for (const lang of langs) {
         await generatePages(lang, globalConfig, input, output);
     }
+    await copyIndexFile(globalConfig, output);
     await copyFiles(globalConfig, input, output);
 }

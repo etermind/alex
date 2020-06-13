@@ -168,6 +168,21 @@ The default content is writtend in a file called `content.md`. Your theme may al
 
 ### Writing content
 
+Alex uses [Github-flavored markdown](https://github.github.com/gfm/) to generate content. The markdown can also be augmented using YAML header. For instance:
+
+```md
+---
+template: home.htm
+---
+# Title
+
+Markdown is so cool!
+```
+
+In the previous example, the header contains a `template` metadata. If the theme you are using provides a template called `home.htm`, it's going to be used to generate the HTML.
+
+All files in a directory should use the same template to avoid weird behaviours.
+
 
 ### Managing data
 
@@ -185,4 +200,186 @@ In your markdown you can the images in data using `/assets/user/imgs/test.png` a
 
 ## Writing themes
 
+A theme directory has the following structure:
+
+```
+theme/
+├── css
+│   ├── default.css
+│   └── menu.css
+├── fonts
+├── html
+│   ├── en
+│   │   └── home.htm
+│   ├── fr
+│   │   └── home.htm
+│   ├── head.htm
+│   └── menu.htm
+├── imgs
+└── js
+```
+
+- `css` contains all your CSS files
+- `js` contains all your JS files
+- `fonts` contains all your fonts
+- `imgs` contains all your images
+- `html` contains the multilingual HTML templates
+
+You can reference your assets (css, js, imgs, fonts) in the HTML templates using `/assets/css|js|fonts|imgs/file`.
+
+### Content of the html directory
+
+The `html` directory contains at least one directory per supported language and an `index.htm` file in each directory.
+
+Alex uses the [nunjucks template engine](https://mozilla.github.io/nunjucks/) to generate HTML content.
+
+Any file in `html` can be referenced by the templates and be used as partial templates.
+
+Alex passes the following object to each template:
+
+```js
+{
+    title: 'Website title for the current language',
+    menu: [menuItemKey, menuObject],
+    content: {
+        metadata: {},
+        content: 'CONTENT FROM content.md',
+        [key]: 'CONTENT FROM x.md'
+    },
+    lang: 'THE CURRENT LANGUAGE',
+    meta: {
+        keywords: 'Comma separated keywords',
+        description: 'Meta description in the current language',
+        [key]: 'Any other meta'
+    }
+}
+```
+
+### Designing a simple theme:
+
+- Start by creating the default structure:
+
+```
+theme/
+├── css
+│   ├── main.css
+├── html
+│   ├── en
+│   │   └── index.htm
+├── fonts
+├── imgs
+└── js
+```
+
+- Create the content of `en/index.htm`:
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <meta name="description" content="{{meta.description}}"></meta>
+        <meta name="keywords" content="{{meta.keywords}}"></meta>
+        <link rel="stylesheet" href="/assets/css/main.css" type="text/css" media="all">
+        <title>{{title}}</title>
+    </head>
+    <body>
+        <h1 class="h1">{{title}}</h1>
+
+        <section>
+            {{content.content | safe}}
+        </section>
+    </body>
+</html>
+```
+
+The [safe filter](https://mozilla.github.io/nunjucks/templating.html#safe) is used to tell Nunjucks to not escape the HTML generated from the markdown file. You can add the whole power of Nunjucks to generate complex templates and HTML files. You are limited by your imagination. 
+
+- Add the relevant CSS in main.css and the relevant JS files
+
+### Including partial templates
+
+Often it is useful to break the HTML templates into reusable chunks. You can use the [include](https://mozilla.github.io/nunjucks/templating.html#include) directive from Nunjucks. For instance, if you wan to have a partial template for the HTML head, you can do it like this:
+
+```
+theme/
+├── css
+│   ├── main.css
+├── html
+│   ├── en
+│   │   └── index.htm
+│   ├── head.htm
+├── fonts
+├── imgs
+└── js
+```
+
+`head.htm`:
+
+```html
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta name="description" content="{{meta.description}}"></meta>
+    <meta name="keywords" content="{{meta.keywords}}"></meta>
+    <link rel="stylesheet" href="/assets/css/main.css" type="text/css" media="all">
+    <title>{{title}}</title>
+</head>
+```
+
+And then, `en/index.htm` becomes:
+
+```html
+<!DOCTYPE html>
+<html>
+    {% include "../head.htm" %}
+    <body>
+        <h1 class="h1">{{title}}</h1>
+         
+        <section>
+            {{content.content | safe}}
+        </section>
+    </body>
+</html>
+```
+
 ## Contributing
+
+Alex is a small project. It has been done in less than a day. It is powerful enough, but of course it lacks features.
+
+If you want to contribute, you can send a pull request provided that the linter passes without modifying the rules, the documentation is updated and the code is clean. 
+
+We really like to keep Alex minimalistic as it is now so that people can dig into it very quickly. Thanks :)
+
+## Development
+
+The code sources is in `lib`:
+
+```
+lib
+├── actions
+│   ├── generate.ts
+│   ├── index.ts
+│   └── serve.ts
+├── cli.ts
+├── errors
+    └── index.ts
+```
+
+- `cli.ts` contains the two actions `generate` and `serve`. We are using [commander](https://github.com/tj/commander.js/) to parse the command line.
+- `action/serve.ts` contains the small static server to serve the website content for testing purpose.
+- `action/generate.ts` contains the code to generate the website. This is Alex's brain.
+- `errors/index.ts` contains all the errors that Alex can raise when he is unhappy.
+
+### actions/generate.ts
+
+The file contains the following functions executed in the following order:
+
+- `generate`, the main function. It iterates over the languages list and generate each page.
+- `generatePages`. It iterates over the menu items and generate one page per item for the current language.
+- `generatePage`. It grabs the markdown files and extracts the content, then grabs the template file and injects the content to output the final HTML file. It uses to helper functions:
+    * `extractMarkdown`. It extracts the markdown of all files.
+    * `renderTemplate`. It sends content to nunjucks and retrieves the HTML content.
+- `copyIndexFile`. It copies the default page into the root of the output directory and rename it to `index.htm` to make it the index page of your website.
+- `copyFiles`. It copies all the static files and put it in the output directory.
