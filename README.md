@@ -52,8 +52,8 @@ which is going to serve your website on [http://localhost:4444](http://localhost
 
 Let's try it out: 
 
-1. Download the example skeleton [here](./skeleton.zip);
-2. Then unzip the skeleton (`unzip skeleton.zip` should do);
+1. Download the example skeleton [here](./skeleton.tar.gz);
+2. Then unzip the skeleton (`tar xzfv skeleton.tar.gz` should do);
 3. Then run `alex` with `alex -i skeleton -o mysite`;
 4. You should end up with a folder called `mysite`;
 5. Finally run `alex serve -p mysite -P 4444`, open [http://localhost:4444](http://localhost:4444) and admire your new site.
