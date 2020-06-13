@@ -231,5 +231,5 @@ export default async function generate(input: string, output: string) {
         await generatePages(lang, globalConfig, input, output);
     }
     await copyIndexFile(globalConfig, output);
-    await copyFiles(globalConfig, input, output);
+    await copyFiles(input, output);
 }
