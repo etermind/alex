@@ -1,4 +1,7 @@
-menu.menu-container {
+.menu-and-languages {
+    display: flex;
+    justify-content: space-between;
+    justify-items: center;
     padding-bottom: 1.5rem;
 }
 
@@ -26,4 +29,25 @@ menu.menu-container {
 .menu li a:hover {
     color: #d4381d;
     background-image: linear-gradient(transparent, transparent 5px, #d4381d 5px, #d4381d);
+}
+
+.languages-container {
+    display: flex;
+    justify-content: center;
+    justify-items: center;
+}
+
+.languages-container p:first-child {
+    padding-left: 0 !important;    
+}
+
+.languages-container p:last-child {
+    padding-right: 0 !important;    
+}
+
+.languages-container p {
+    font-size: 1.5rem;
+    padding-right: 1rem;    
+    padding-left: 1rem;
+    font-variant: small-caps;
 }

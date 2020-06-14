@@ -53,6 +53,7 @@ Alex passes the following object to each template:
         [key]: 'CONTENT FROM x.md'
     },
     lang: 'THE CURRENT LANGUAGE',
+    languages: ['en', 'fr'] // The list of all languages defined in the config.yaml,
     meta: {
         keywords: 'Comma separated keywords',
         description: 'Meta description in the current language',
@@ -158,11 +159,12 @@ And then, `en/index.htm` becomes:
 When Alex generates your website, it outputs a structure like this:
 
 ```
-corentin
+my-site
 ├── assets
 │   ├── css
 │   │   ├── default.css
 │   │   ├── menu.css
+│   │   └── monokai.css
 │   ├── fonts
 │   ├── imgs
 │   ├── js
@@ -170,25 +172,42 @@ corentin
 │       ├── files
 │       └── imgs
 ├── en
-│   └── home
-│       ├── index.htm
-│       └── subpage
-│           ├── index.htm
-│           └── subsubpage
-│               └── index.htm
+│   ├── home
+│   │   ├── index.htm
+│   │   └── subpage
+│   │       ├── index.htm
+│   │       └── subsubpage
+│   │           └── index.htm
+│   └── index.htm
 ├── fr
-│   └── home
-│       ├── index.htm
-│       └── subpage
-│           ├── index.htm
-│           └── subsubpage
-│               └── index.htm
+│   ├── home
+│   │   ├── index.htm
+│   │   └── subpage
+│   │       ├── index.htm
+│   │       └── subsubpage
+│   │           └── index.htm
+│   └── index.htm
 └── index.htm
 ```
 
 As you can see, each HTML file is called `index.htm` and respects the structure of the `content` directory.
 
 So you can reference the pages and the subpages using that structure. The direct subpages are also passed to the nunjucks template using the `subpages` array.
+
+### Referencing the default page for each language
+
+Alex copies the default page for each language as `index.htm` under each language directory:
+
+```
+my-site
+├── en
+│   └── index.htm
+├── fr
+│   └── index.htm
+└── index.htm
+```
+
+So, you can use the `languages` object to iterate over all the available languages for the user and add a link to `/{{language}}`, for instance `/en` or `/fr`. 
 
 ### Working with multiple markdown fragments
 
