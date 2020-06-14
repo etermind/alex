@@ -451,6 +451,7 @@ The file contains the following functions executed in the following order:
 - `generatePageRecursively`. It extracts the content from the markdown files, then grabs the template file and injects the content to output the final HTML file. It uses to helper functions:
     * `extractMarkdown`. It extracts the markdown of all files.
     * `renderTemplate`. It sends content to nunjucks and retrieves the HTML content.
+
 Finally, it recursively enumerates all the directories inside the path and starts again.
 - `copyIndexFile`. It copies the default page into the root of the output directory and rename it to `index.htm` to make it the index page of your website.
 - `copyFiles`. It copies all the static files and put it in the output directory.
