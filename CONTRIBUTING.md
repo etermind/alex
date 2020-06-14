@@ -2,7 +2,12 @@
 
 Alex is a small project. It has been done in less than a day. It is powerful enough, but of course it lacks features.
 
-If you want to contribute, you can send a pull request provided that the linter passes without modifying the rules, the documentation is updated and the code is clean. 
+If you want to contribute, you can send a pull request provided that:
+
+1. The linter passes without modifying the rules;
+2. The documentation is updated 
+3. You follow the [Conventional commit convention](https://www.conventionalcommits.org/en/v1.0.0-beta.4/);
+4. And the code is clean.
 
 We really like to keep Alex minimalistic as it is now so that people can dig into it very quickly. Thanks :)
 
