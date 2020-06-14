@@ -22,6 +22,7 @@ menu:
             fr: 'Accueil'
             en: 'Home'
         external: false
+        hide: false 
     code:
         name:
             fr: 'Code'

@@ -2,6 +2,7 @@ import _ from 'lodash';
 import YAML from 'yaml';
 import YAMLMetadataParser from 'markdown-yaml-metadata-parser';
 import Showdown from 'showdown';
+import ShowdownHighlight from 'showdown-highlight';
 import Path from 'path';
 import Nunjucks from 'nunjucks';
 import Rimraf from 'rimraf';
@@ -9,7 +10,9 @@ import FS from 'fs';
 import FSExtra from 'fs-extra';
 import * as E from '../errors';
 
-const Converter = new Showdown.Converter(); // tslint:disable-line
+const Converter = new Showdown.Converter({ // tslint:disable-line
+    extensions: [ShowdownHighlight],
+});
 Converter.setFlavor('github');
 
 /**
@@ -52,6 +55,71 @@ async function extractMarkdown(input: string): Promise<any> {
 }
 
 /**
+ * Generate page by traversing the filesystem
+ * It looks for sub-directories in the current dir and walking into it to generate
+ * a new page
+ * @param rootPath The current directory
+ * @param lang The current language
+ * @param globalConfig The config
+ * @param input The input path
+ * @param output The output path
+ */
+async function generatePageRecursively(
+    rootPath: string,
+    lang: string,
+    globalConfig: any,
+    input: string,
+    output: string
+) {
+    const config: any = globalConfig.config || {};
+    const lastPartOfPath = Path.parse(rootPath).base;
+    const contentInfo = await extractMarkdown(rootPath);
+
+    const dirs = FS.readdirSync(rootPath).filter((f: string) => {
+        const p = Path.join(rootPath, f);
+        return FS.statSync(p).isDirectory();
+    });
+
+    const obj: any = {
+        lang,
+        menu: Object.entries(globalConfig.menu),
+        content: contentInfo,
+        title: globalConfig.title[lang] || '',
+        subpages: dirs,
+        meta: _.merge(
+            {},
+            config.meta,
+            { keywords: config.meta.keywords.join(', ') },
+            { description: config.meta.description[lang] }
+        ),
+    };
+
+    const htmlTplPath = Path.join(input, 'theme', 'html');
+    if (!FS.existsSync(htmlTplPath)) {
+        throw E.HTML_TEMPLATE_PATH_NOT_FOUND(htmlTplPath);
+    }
+
+    const finalHtml = await renderTemplate(
+        htmlTplPath,
+        `${lang}/${contentInfo.metadata.template || 'index.htm'}`,
+        obj);
+
+    const outputPath = Path.join(output, lastPartOfPath);
+    const outputFile = Path.join(outputPath, 'index.htm');
+
+    if (!FS.existsSync(outputPath)) {
+        FS.mkdirSync(outputPath);
+    }
+    FSExtra.writeFileSync(outputFile, finalHtml);
+
+    for (const directory of dirs) {
+        const newPath = Path.join(rootPath, directory);
+        const newOutput = Path.join(output, lastPartOfPath);
+        await generatePageRecursively(newPath, lang, globalConfig, input, newOutput);
+    }
+}
+
+/**
  * Generate a page
  *
  * - Check the menu item
@@ -74,7 +142,6 @@ async function generatePage(
     output: string
 ) {
     const menuConfig: any = globalConfig.menu[menuItem] || {};
-    const config: any = globalConfig.config || {};
 
     if (Object.keys(menuConfig).length === 0) {
         console.warn(`Menu item ${menuItem} is empty, nothing is going to be generated`);
@@ -91,32 +158,7 @@ async function generatePage(
         throw E.MARKDOWN_NOT_FOUND(markdownPath);
     }
 
-    const contentInfo = await extractMarkdown(markdownPath);
-
-    const obj: any = {
-        lang,
-        menu: Object.entries(globalConfig.menu),
-        content: contentInfo,
-        title: globalConfig.title[lang] || '',
-        meta: _.merge(
-            {},
-            config.meta,
-            { keywords: config.meta.keywords.join(', ') },
-            { description: config.meta.description[lang] }
-        ),
-    };
-
-    const htmlTplPath = Path.join(input, 'theme', 'html');
-    if (!FS.existsSync(htmlTplPath)) {
-        throw E.HTML_TEMPLATE_PATH_NOT_FOUND(htmlTplPath);
-    }
-
-    const finalHtml = await renderTemplate(
-        htmlTplPath,
-        `${lang}/${contentInfo.metadata.template || 'index.htm'}`,
-        obj);
-    const outputFile = Path.join(output, lang, `${menuItem}.htm`);
-    FSExtra.writeFileSync(outputFile, finalHtml);
+    await generatePageRecursively(markdownPath, lang, globalConfig, input, Path.join(output, lang));
 }
 
 /**
@@ -162,7 +204,7 @@ async function copyIndexFile(globalConfig: any, output: string) {
         throw E.DEFAULT_MENU_ITEM_NOT_FOUND;
     }
 
-    const path = Path.join(output, defaultLang, `${defaultPage}.htm`);
+    const path = Path.join(output, defaultLang, defaultPage, 'index.htm');
     const destPath = Path.join(output, 'index.htm');
     FSExtra.copySync(path, destPath);
 }
