@@ -1,6 +1,6 @@
 {
     "name": "@etermind/alex",
-    "version": "0.6.1",
+    "version": "0.6.2",
     "description": "Alex is a easy and small static site generator",
     "main": "dist/lib/cli.js",
     "bin": {

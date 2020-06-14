@@ -1,12 +1,19 @@
-<menu class="menu-container">
-    <ul class="menu h3">
-        {% for key, value in menu %}
-            {% if value.hide %}
-            {% elif value.external %}
-        <li><a href='{{value.link}}' target="{{value.target}}">{{value.name[lang]}}</a></li>
-            {% else %}
-        <li><a href='/{{lang}}/{{key}}/index.htm'>{{value.name[lang]}}</a></li>
-            {% endif %}
+<div class="menu-and-languages">
+    <menu class="menu-container">
+        <ul class="menu h3">
+            {% for key, value in menu %}
+                {% if value.hide %}
+                {% elif value.external %}
+            <li><a href='{{value.link}}' target="{{value.target}}">{{value.name[lang]}}</a></li>
+                {% else %}
+            <li><a href='/{{lang}}/{{key}}/index.htm'>{{value.name[lang]}}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </menu>
+    <div class="languages-container">
+        {% for l in languages %}
+        <p><a href='/{{l}}'>{{l}}</a></p>
         {% endfor %}
-    </ul>
-</menu>
+    </div>
+</div>

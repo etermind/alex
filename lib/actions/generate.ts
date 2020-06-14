@@ -82,6 +82,7 @@ async function generatePageRecursively(
 
     const obj: any = {
         lang,
+        languages: config.langs,
         menu: Object.entries(globalConfig.menu),
         content: contentInfo,
         title: globalConfig.title[lang] || '',
@@ -207,6 +208,14 @@ async function copyIndexFile(globalConfig: any, output: string) {
     const path = Path.join(output, defaultLang, defaultPage, 'index.htm');
     const destPath = Path.join(output, 'index.htm');
     FSExtra.copySync(path, destPath);
+
+    // Copy default page for each language
+    for (const l of langs) {
+        const perLangPath = Path.join(output, l, defaultPage, 'index.htm');
+        const destPerLangPath = Path.join(output, l, 'index.htm');
+        FSExtra.copySync(perLangPath, destPerLangPath);
+    }
+
 }
 
 /**
