@@ -16,7 +16,7 @@ Because my roommate needed a minimalistic static generator way less complicated 
 
 ## How easy can it get?
 
-Using standard technologies and well-known libraries, Alex is only 300 lines of code with comments!
+Using standard technologies and well-known libraries, Alex is only 350 lines of code with comments!
 
 ## Is it powerful?
 
@@ -26,8 +26,10 @@ Alex is powerful enough! But if you expect a fully-featured static site generato
 
 - Multilingual support
 - Themable
+- Code highlighting (using [highlightjs](https://highlightjs.org))
 - Markdown (Github flavor)
 - Users defined file
+- Pages and subpages
 - Small and easy configuration
 
 ## Getting started
@@ -54,7 +56,7 @@ Let's try it out:
 
 1. Download the example skeleton [here](./skeleton.tar.gz);
 2. Then unzip the skeleton (`tar xzfv skeleton.tar.gz` should do);
-3. Then run `alex` with `alex -i skeleton -o mysite`;
+3. Then run `alex` with `alex generate -i skeleton -o mysite`;
 4. You should end up with a folder called `mysite`;
 5. Finally run `alex serve -p mysite -P 4444`, open [http://localhost:4444](http://localhost:4444) and admire your new site.
 
@@ -96,6 +98,7 @@ menu:
             fr: 'Accueil'
             en: 'Home'
         external: false
+        hide: false 
     code:
         name:
             fr: 'Code'
@@ -141,7 +144,8 @@ Each menu item is composed of:
 
 1. A name, which supports multiple languages
 2. A boolean called `external` to know if the item should redirect to an external page or not.
-3. If the item is external, you can specify a `link` and an optional `target`.
+3. A boolean called `hide` to know if the item should be hidden in the menu.
+4. If the item is external, you can specify a `link` and an optional `target`.
 
 ### Managing content
 All the content of your website lies in the `content` directory.
@@ -153,18 +157,26 @@ content
 ├── en
 │   └── home
 │       ├── content.md
-│       └── description.md
+│       ├── description.md
+│       └── subpage
+│           ├── content.md
+│           └── subsubpage
+│               └── content.md
 └── fr
     └── home
         ├── content.md
-        └── description.md
+        ├── description.md
+        └── subpage
+            ├── content.md
+            └── subsubpage
+                └── content.md
 ```
 
-You have one directory per language: here we have two languages: `fr` and `en`).
+1. 1 directory per language: here we have two languages: `fr` and `en`).
+2. 1 directory per internal menu item: here we have only one internal menu item which is home (since `external: false`).
+3. As many directories as you want per subpages in a recursive manner. We have `subpage` and `subsubpage` in the example.
 
-Then you have one directory per internal menu item: here we have only one internal menu item which is home (since `external: false`).
-
-The default content is writtend in a file called `content.md`. Your theme may allow you to have more than one markdown file per template (see the *Writing themes* section for details), but it is not mandatory.
+The default content is written in a file called `content.md`. Your theme may allow you to have more than one markdown file per template (see the *Writing themes* section for details), but it is not mandatory.
 
 ### Writing content
 
@@ -251,7 +263,8 @@ Alex passes the following object to each template:
         keywords: 'Comma separated keywords',
         description: 'Meta description in the current language',
         [key]: 'Any other meta'
-    }
+    },
+    subpages: ['subpage1', 'subpage2'], // List of the subpages' name
 }
 ```
 
@@ -344,6 +357,62 @@ And then, `en/index.htm` becomes:
 </html>
 ```
 
+### Using pages & subpages and referencing them
+
+When Alex generates your website, it outputs a structure like this:
+
+```
+corentin
+├── assets
+│   ├── css
+│   │   ├── default.css
+│   │   ├── menu.css
+│   ├── fonts
+│   ├── imgs
+│   ├── js
+│   └── user
+│       ├── files
+│       └── imgs
+├── en
+│   └── home
+│       ├── index.htm
+│       └── subpage
+│           ├── index.htm
+│           └── subsubpage
+│               └── index.htm
+├── fr
+│   └── home
+│       ├── index.htm
+│       └── subpage
+│           ├── index.htm
+│           └── subsubpage
+│               └── index.htm
+└── index.htm
+```
+
+As you can see, each HTML file is called `index.htm` and respects the structure of the `content` directory.
+
+So you can reference the pages and the subpages using that structure. The direct subpages are also passed to the nunjucks template using the `subpages` array.
+
+### Working with multiple markdown fragments
+
+You are free to use as many markdown fragments as you want for a single page.
+
+Alex passes all markdown fragments to the nunjucks template using the `content` object:
+
+```js
+{
+    content: {
+        metadata: {}, // Merging of metadata from all markdown files 
+        content: 'HTML from content.md',
+        description: 'HTML from description.md',
+        title: 'HTML from title.md',
+    }
+}
+```
+
+This one, you can design complex themes and allow your users to split their markdown files into chunks.
+
 ## Contributing
 
 Alex is a small project. It has been done in less than a day. It is powerful enough, but of course it lacks features.
@@ -378,8 +447,11 @@ The file contains the following functions executed in the following order:
 
 - `generate`, the main function. It iterates over the languages list and generate each page.
 - `generatePages`. It iterates over the menu items and generate one page per item for the current language.
-- `generatePage`. It grabs the markdown files and extracts the content, then grabs the template file and injects the content to output the final HTML file. It uses to helper functions:
+- `generatePage`. It grabs the markdown files from the root path and run the recursive generation.
+- `generatePageRecursively`. It extracts the content from the markdown files, then grabs the template file and injects the content to output the final HTML file. It uses to helper functions:
     * `extractMarkdown`. It extracts the markdown of all files.
     * `renderTemplate`. It sends content to nunjucks and retrieves the HTML content.
+
+Finally, it recursively enumerates all the directories inside the path and starts again.
 - `copyIndexFile`. It copies the default page into the root of the output directory and rename it to `index.htm` to make it the index page of your website.
 - `copyFiles`. It copies all the static files and put it in the output directory.
