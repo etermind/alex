@@ -6,7 +6,7 @@
 [release-image]:https://img.shields.io/github/release/etermind/alex.svg?style=flat-square
 [release-url]:https://github.com/etermind/alex/releases/latest
 [license-image]:http://img.shields.io/badge/license-MIT-000000.svg?style=flat-square
-[license-url]:LICENSE.txt
+[license-url]:LICENSE
 
 Welcome to Alex! 
 
