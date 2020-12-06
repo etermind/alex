@@ -99,13 +99,16 @@ config:
             - site 
             - alex 
 menu:
-    home: 
+    - 
+        content: home
         name: 
             fr: 'Accueil'
             en: 'Home'
         external: false
-        hide: false 
-    code:
+        hide: false
+        submenus: []
+    -
+        content: code
         name:
             fr: 'Code'
             en: 'Code'
@@ -119,6 +122,7 @@ A `config.yaml` is composed of 3 sections:
 - `title` which is the title of your website (often used in the `title` tag).
 - `config` which allow you to define all supported languages for your website, the default language and the meta information
 - `menu` which defines the main menu of your website.
+- `theme` which defines variables specific to the used theme. This is optional. 
 
 #### Config section
 
@@ -142,7 +146,7 @@ You can activate or deactivate a language by adding or removing a language here.
 
 #### Menu section
 
-You can as many menu items as you want.
+You can as many menu items as you want (the same goes for submenus).
 
 In our example, `home` is going to be the first menu item and `code` the last one.
 
@@ -152,8 +156,11 @@ Each menu item is composed of:
 2. A boolean called `external` to know if the item should redirect to an external page or not.
 3. A boolean called `hide` to know if the item should be hidden in the menu.
 4. If the item is external, you can specify a `link` and an optional `target`.
+5. An icon (not supported by all themes). This is optional.
+6. Submenus (not supported by all themes). This is optional.
 
 ### Managing content
+
 All the content of your website lies in the `content` directory.
 
 The content of the directory should look like this:
@@ -216,10 +223,12 @@ data
 
 In your markdown you can the images in data using `/assets/user/imgs/test.png` and the other files using `/assets/user/files/article.pdf`.
 
-## Writing new themes
+## Themes
 
-If you would like to customize or create a new theme. Please read [this](./THEMES.md)
+Alex comes with multiple themes. Check out the [dedicated repo](https://github.com/etermind/alex-themes).
+
+If you would like to customize or create a new theme. Please read [this](./THEMES.md).
 
 ## Contributing
 
-If you would like to contributing, please read [this](./CONTRIBUTING.md)
+If you would like to contributing, please read [this](./CONTRIBUTING.md).

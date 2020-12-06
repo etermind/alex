@@ -46,7 +46,7 @@ Alex passes the following object to each template:
 ```js
 {
     title: 'Website title for the current language',
-    menu: [menuItemKey, menuObject],
+    menu: [], // Information about the menu and its sub-menus
     content: {
         metadata: {},
         content: 'CONTENT FROM content.md',
@@ -60,6 +60,7 @@ Alex passes the following object to each template:
         [key]: 'Any other meta'
     },
     subpages: ['subpage1', 'subpage2'], // List of the subpages' name
+    theme: {}, // Information specific to the selected theme
 }
 ```
 
