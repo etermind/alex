@@ -252,7 +252,7 @@ In your markdown you can the images in data using `/assets/user/imgs/test.png` a
 
 Alex comes with multiple themes. Check out the [dedicated repo](https://github.com/etermind/alex-themes).
 
-If you would like to customize or create a new theme. Please read [this](https://github.com/etermind/alex-themes/THEMES.md).
+If you would like to customize or create a new theme. Please read [this](https://github.com/etermind/alex-themes/blob/master/THEMES.md).
 
 ## Contributing
 
