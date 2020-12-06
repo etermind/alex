@@ -38,7 +38,7 @@
         "commander": "^5.1.0",
         "finalhandler": "^1.1.2",
         "fs-extra": "^9.0.1",
-        "lodash": "^4.17.15",
+        "lodash": "^4.17.20",
         "markdown-yaml-metadata-parser": "^2.0.5",
         "nunjucks": "^3.2.1",
         "rimraf": "^3",
