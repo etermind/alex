@@ -32,6 +32,7 @@ Alex is powerful enough! He supports:
 - Themes 
 - Code highlighting (using [highlightjs](https://highlightjs.org))
 - Markdown (Github flavor) with YAML metadata
+- Math support using [KaTeX](https://katex.org/) (with the help of \`\`\`latex \`\`\` for block math and $$ $$ for inline math)
 - User defined files
 - Pages and subpages
 - Easy configuration with YAML
@@ -97,7 +98,13 @@ config:
         keywords: 
             - awesome 
             - site 
-            - alex 
+            - alex
+    scripts:
+        -
+            content: >
+                const test = 'Blablabla';
+        -
+            source: 'https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.js'
 menu:
     - 
         content: home
@@ -132,6 +139,7 @@ The `config` section is divided into:
 2. `defaultLang`: The default language of your website.
 3. `defaultPage`: The default page of your website (it should match one of your menu item).
 3. `meta`: The meta tags for your website.
+4. `scripts`: Optional list of JS scripts. 
 
 *Meta*
 
@@ -143,6 +151,10 @@ The `config` section is divided into:
 *Langs*
 
 You can activate or deactivate a language by adding or removing a language here. Be aware that the theme you are using should support your default language, because if one of your other languages is not supported, we fallback to the default one.
+
+*Scripts*
+
+`scripts` is a list of JS scripts. This is optional. You have two flavors: using `content` or using `source`. The former is for inline scripts, while the latter is for scripts hosted elsewhere (on a CDN for instance). This is useful if you want to add [Google Analytics](https://analytics.google.com) or [Countly](https://count.ly) to your website.
 
 #### Menu section
 
@@ -173,21 +185,34 @@ content
 │       ├── description.md
 │       └── subpage
 │           ├── content.md
-│           └── subsubpage
-│               └── content.md
 └── fr
     └── home
         ├── content.md
         ├── description.md
         └── subpage
             ├── content.md
-            └── subsubpage
-                └── content.md
 ```
 
 1. 1 directory per language: here we have two languages: `fr` and `en`).
 2. 1 directory per internal menu item: here we have only one internal menu item which is home (since `external: false`).
-3. As many directories as you want per subpages in a recursive manner. We have `subpage` and `subsubpage` in the example.
+3. As many directories as you want per subpages in a recursive manner. They need to be linked into a submenu. For instance:
+
+```yaml
+menu:
+    - 
+        content: home
+        name: 
+            fr: 'Accueil'
+            en: 'Home'
+        external: false
+        hide: false
+        submenus:
+            -
+                content: subpage
+                name:
+                    fr: 'Sous-page'
+                    en: 'Subpage'
+```
 
 The default content is written in a file called `content.md`. Your theme may allow you to have more than one markdown file per template (see the *Writing themes* section for details), but it is not mandatory.
 
@@ -227,7 +252,7 @@ In your markdown you can the images in data using `/assets/user/imgs/test.png` a
 
 Alex comes with multiple themes. Check out the [dedicated repo](https://github.com/etermind/alex-themes).
 
-If you would like to customize or create a new theme. Please read [this](./THEMES.md).
+If you would like to customize or create a new theme. Please read [this](https://github.com/etermind/alex-themes/THEMES.md).
 
 ## Contributing
 

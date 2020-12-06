@@ -3,6 +3,7 @@ import YAML from 'yaml';
 import YAMLMetadataParser from 'markdown-yaml-metadata-parser';
 import Showdown from 'showdown';
 import ShowdownHighlight from 'showdown-highlight';
+import ShowdownKatex from 'showdown-katex';
 import Path from 'path';
 import Nunjucks from 'nunjucks';
 import Rimraf from 'rimraf';
@@ -11,7 +12,7 @@ import FSExtra from 'fs-extra';
 import * as E from '../errors';
 
 const Converter = new Showdown.Converter({ // tslint:disable-line
-    extensions: [ShowdownHighlight],
+    extensions: [ShowdownHighlight, ShowdownKatex({ displayMode: false })],
 });
 Converter.setFlavor('github');
 
