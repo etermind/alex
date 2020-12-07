@@ -24,9 +24,11 @@ async function main() {
             'Path to the generated site directory')
         .requiredOption('-P, --port <value>',
             'Port to listen to', '3000')
+        .option('-r, --root <value>',
+            'Root of the URL (should be config.rootPath in your config.yml)')
         .action(async (cmd: any) => {
             const port = parseInt(cmd.port, 10) || 3000;
-            await Actions.Serve(cmd.path, port);
+            await Actions.Serve(cmd.path, port, cmd.root);
         });
 
     Commander.program
