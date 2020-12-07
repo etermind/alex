@@ -45,7 +45,16 @@ But if you expect a fully-featured static site generator, you should use somethi
 npm install @etermind/alex -g
 ```
 
-You'll end up with `alex` in your PATH and then you can just do:
+You'll end up with `alex` in your PATH. Then look at a theme [here](https://github.com/etermind/alex-themes) and download one.
+
+Then you can do:
+
+
+```sh
+alex init -t PATH_TO_THEME -o OUTPUT_DIR_WITH_THEME_AND_CONTENT
+```
+
+Once you have configured and written your content, generate the HTML/CSS/JS for your website:
 
 ```sh
 alex generate -i INPUT_DIR_WITH_CONTENT -o OUTPUT_DIR_WITH_GENERATED_SITE
@@ -62,7 +71,7 @@ which is going to serve your website on [http://localhost:4444](http://localhost
 Let's try it out: 
 
 1. Download the example skeleton [here](./skeleton.tar.gz);
-2. Then unzip the skeleton (`tar xzfv skeleton.tar.gz` should do);
+2. Then unzip the skeleton (`tar xzfv skeleton.tar.gz` should do). The skeleton contains the [minimal-rb theme]() and some dummy content; if you want to use another theme, use `alex init` instead; 
 3. Then run `alex` with `alex generate -i skeleton -o mysite`;
 4. You should end up with a folder called `mysite`;
 5. Finally run `alex serve -p mysite -P 4444`, open [http://localhost:4444](http://localhost:4444) and admire your new site.
@@ -71,7 +80,7 @@ Let's try it out:
 
 An Alex website is composed of:
 
-- `config.yaml` where the main config of the website lies;
+- `config.yml` where the main config of the website lies;
 - `content` where all your markdown files are;
 - `data` for user generated files and images;
 - `theme` for the theme and the rendering of your site;
@@ -81,10 +90,6 @@ An Alex website is composed of:
 Here is a simple `config.yaml` file:
 
 ```yaml
-title:
-    fr: 'Mon titre'
-    en: 'Your title'
-
 config:
     langs: 
         - en
@@ -124,12 +129,11 @@ menu:
         target: '_blank'
 ```
 
-A `config.yaml` is composed of 3 sections:
+A `config.yml` is composed of 3 sections:
 
-- `title` which is the title of your website (often used in the `title` tag).
 - `config` which allow you to define all supported languages for your website, the default language and the meta information
 - `menu` which defines the main menu of your website.
-- `theme` which defines variables specific to the used theme. This is optional. 
+- `theme` which defines variables specific to the theme you are using. This is optional. 
 
 #### Config section
 
@@ -138,8 +142,8 @@ The `config` section is divided into:
 1. `langs`: A list of languages following the [ISO-639-1 standard](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) (two letters to describe the language such as `fr` for French or `en` for English).
 2. `defaultLang`: The default language of your website.
 3. `defaultPage`: The default page of your website (it should match one of your menu item).
-3. `meta`: The meta tags for your website.
-4. `scripts`: Optional list of JS scripts. 
+4. `meta`: The meta tags for your website.
+5. `scripts`: Optional list of JS scripts. 
 
 *Meta*
 

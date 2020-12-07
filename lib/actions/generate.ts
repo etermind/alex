@@ -6,6 +6,7 @@ import ShowdownHighlight from 'showdown-highlight';
 import ShowdownKatex from 'showdown-katex';
 import Path from 'path';
 import Nunjucks from 'nunjucks';
+import * as Luxon from 'luxon';
 import Rimraf from 'rimraf';
 import FS from 'fs';
 import FSExtra from 'fs-extra';
@@ -24,8 +25,12 @@ Converter.setFlavor('github');
  * @return The rendered template (or an empty string)
  */
 async function renderTemplate(path: string, template: string, info: any): Promise<string> {
-    Nunjucks.configure(path, { autoescape: true });
-    return Nunjucks.render(template, info) || '';
+    const luxonFormatFilter = (val: string, ...args: any[]) =>
+    Luxon.DateTime.fromISO(val).toFormat(args[0] || 'yyyy-MM-dd');
+
+    const env = Nunjucks.configure(path, { autoescape: true });
+    env.addFilter('luxon', luxonFormatFilter);
+    return env.render(template, info) || '';
 }
 
 /**
@@ -83,7 +88,6 @@ async function generatePageRecursively(
             languages: config.langs,
             menu: globalConfig.menu,
             content: contentInfo,
-            title: globalConfig.title[lang] || '',
             subpages: menuItem.submenus || [],
             meta: _.merge(
                 {},
@@ -93,6 +97,7 @@ async function generatePageRecursively(
             ),
             scripts: config.scripts || [],
             theme: globalConfig.theme || {},
+            themeConfig: globalConfig.themeConfig || {},
         };
 
         const htmlTplPath = Path.join(input, 'theme', 'html');
@@ -109,7 +114,7 @@ async function generatePageRecursively(
         if (contentInfo.metadata) {
             const finalHtml = await renderTemplate(
                 htmlTplPath,
-                `${lang}/${contentInfo.metadata.template || 'index.htm'}`,
+                `${contentInfo.metadata.template || 'index.htm'}`,
                 obj);
 
             const outputFile = Path.join(outputPath, 'index.htm');
@@ -268,20 +273,35 @@ export default async function generate(input: string, output: string) {
         FS.mkdirSync(output);
     }
 
-    const configFile = Path.join(input, 'config.yaml');
+    const configFile = Path.join(input, 'config.yml');
 
     if (!FS.existsSync(configFile)) {
         throw E.CONFIG_FILE_NOT_FOUND;
     }
 
-    const globalConfig = YAML.parse(FS.readFileSync(configFile, 'utf8'));
+    const themeConfigFile = Path.join(input, 'theme', 'theme.yml');
 
+    if (!FS.existsSync(themeConfigFile)) {
+        throw E.THEME_CONFIG_FILE_NOT_FOUND;
+    }
+
+    const globalConfig = YAML.parse(FS.readFileSync(configFile, 'utf8'));
+    const themeConfig = YAML.parse(FS.readFileSync(themeConfigFile, 'utf8'));
     const { config = {} } = globalConfig;
 
     const langs: string[] = (config.langs || []);
     if (langs.length === 0) {
         throw E.LANGUAGES_NOT_FOUND;
     }
+
+    const allLangsAreSupportedByTheTheme = langs.every(l =>
+        (themeConfig.supportedLanguages || []).indexOf(l) !== -1);
+
+    if (!allLangsAreSupportedByTheTheme) {
+        throw E.THEME_UNSUPPORTED_LANGUAGES;
+    }
+
+    globalConfig.themeConfig = themeConfig;
 
     for (const lang of langs) {
         await generatePages(lang, globalConfig, input, output);
