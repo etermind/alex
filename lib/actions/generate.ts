@@ -3,15 +3,17 @@ import YAML from 'yaml';
 import YAMLMetadataParser from 'markdown-yaml-metadata-parser';
 import Showdown from 'showdown';
 import ShowdownHighlight from 'showdown-highlight';
+import ShowdownKatex from 'showdown-katex';
 import Path from 'path';
 import Nunjucks from 'nunjucks';
+import * as Luxon from 'luxon';
 import Rimraf from 'rimraf';
 import FS from 'fs';
 import FSExtra from 'fs-extra';
 import * as E from '../errors';
 
 const Converter = new Showdown.Converter({ // tslint:disable-line
-    extensions: [ShowdownHighlight],
+    extensions: [ShowdownHighlight, ShowdownKatex({ displayMode: false })],
 });
 Converter.setFlavor('github');
 
@@ -23,8 +25,12 @@ Converter.setFlavor('github');
  * @return The rendered template (or an empty string)
  */
 async function renderTemplate(path: string, template: string, info: any): Promise<string> {
-    Nunjucks.configure(path, { autoescape: true });
-    return Nunjucks.render(template, info) || '';
+    const luxonFormatFilter = (val: string, ...args: any[]) =>
+    Luxon.DateTime.fromISO(val).toFormat(args[0] || 'yyyy-MM-dd');
+
+    const env = Nunjucks.configure(path, { autoescape: true });
+    env.addFilter('luxon', luxonFormatFilter);
+    return env.render(template, info) || '';
 }
 
 /**
@@ -55,9 +61,8 @@ async function extractMarkdown(input: string): Promise<any> {
 }
 
 /**
- * Generate page by traversing the filesystem
- * It looks for sub-directories in the current dir and walking into it to generate
- * a new page
+ * Generate page and recursively generates pages for submenus
+ * @param menuItem The current menu item (with potential submenus
  * @param rootPath The current directory
  * @param lang The current language
  * @param globalConfig The config
@@ -65,6 +70,7 @@ async function extractMarkdown(input: string): Promise<any> {
  * @param output The output path
  */
 async function generatePageRecursively(
+    menuItem: any,
     rootPath: string,
     lang: string,
     globalConfig: any,
@@ -73,50 +79,56 @@ async function generatePageRecursively(
 ) {
     const config: any = globalConfig.config || {};
     const lastPartOfPath = Path.parse(rootPath).base;
-    const contentInfo = await extractMarkdown(rootPath);
 
-    const dirs = FS.readdirSync(rootPath).filter((f: string) => {
-        const p = Path.join(rootPath, f);
-        return FS.statSync(p).isDirectory();
-    });
+    if (FS.existsSync(rootPath)) {
+        const contentInfo = await extractMarkdown(rootPath);
 
-    const obj: any = {
-        lang,
-        languages: config.langs,
-        menu: Object.entries(globalConfig.menu),
-        content: contentInfo,
-        title: globalConfig.title[lang] || '',
-        subpages: dirs,
-        meta: _.merge(
-            {},
-            config.meta,
-            { keywords: config.meta.keywords.join(', ') },
-            { description: config.meta.description[lang] }
-        ),
-    };
+        const obj: any = {
+            lang,
+            languages: config.langs,
+            menu: globalConfig.menu,
+            content: contentInfo,
+            subpages: menuItem.submenus || [],
+            root: config.rootPath || '',
+            meta: _.merge(
+                {},
+                config.meta,
+                { keywords: config.meta.keywords.join(', ') },
+                { description: config.meta.description[lang] }
+            ),
+            scripts: config.scripts || [],
+            theme: globalConfig.theme || {},
+            themeConfig: globalConfig.themeConfig || {},
+        };
 
-    const htmlTplPath = Path.join(input, 'theme', 'html');
-    if (!FS.existsSync(htmlTplPath)) {
-        throw E.HTML_TEMPLATE_PATH_NOT_FOUND(htmlTplPath);
+        const htmlTplPath = Path.join(input, 'theme', 'html');
+        if (!FS.existsSync(htmlTplPath)) {
+            throw E.HTML_TEMPLATE_PATH_NOT_FOUND(htmlTplPath);
+        }
+
+        const outputPath = Path.join(output, lastPartOfPath);
+        if (!FS.existsSync(outputPath)) {
+            FS.mkdirSync(outputPath);
+        }
+
+        // Generate only if a md file has been found under the path
+        if (contentInfo.metadata) {
+            const finalHtml = await renderTemplate(
+                htmlTplPath,
+                `${contentInfo.metadata.template || 'index.htm'}`,
+                obj);
+
+            const outputFile = Path.join(outputPath, 'index.htm');
+
+            FSExtra.writeFileSync(outputFile, finalHtml);
+        }
+
     }
 
-    const finalHtml = await renderTemplate(
-        htmlTplPath,
-        `${lang}/${contentInfo.metadata.template || 'index.htm'}`,
-        obj);
-
-    const outputPath = Path.join(output, lastPartOfPath);
-    const outputFile = Path.join(outputPath, 'index.htm');
-
-    if (!FS.existsSync(outputPath)) {
-        FS.mkdirSync(outputPath);
-    }
-    FSExtra.writeFileSync(outputFile, finalHtml);
-
-    for (const directory of dirs) {
-        const newPath = Path.join(rootPath, directory);
+    for (const submenu of (menuItem.submenus || [])) {
+        const newPath = Path.join(rootPath, submenu.content);
         const newOutput = Path.join(output, lastPartOfPath);
-        await generatePageRecursively(newPath, lang, globalConfig, input, newOutput);
+        await generatePageRecursively(submenu, newPath, lang, globalConfig, input, newOutput);
     }
 }
 
@@ -130,36 +142,37 @@ async function generatePageRecursively(
  * - Write the final HTML page in the output directory
  *
  * @param lang The current language
- * @param menuItem The current menu item key
+ * @param menuItem The current menu item
  * @param globalConfig The config
  * @param input The input path
  * @param output The output path
  */
 async function generatePage(
     lang: string,
-    menuItem: string,
+    menuItem: any,
     globalConfig: any,
     input: string,
     output: string
 ) {
-    const menuConfig: any = globalConfig.menu[menuItem] || {};
-
-    if (Object.keys(menuConfig).length === 0) {
-        console.warn(`Menu item ${menuItem} is empty, nothing is going to be generated`);
+    if (Object.keys(menuItem).length === 0) {
+        console.warn('Menu is empty, nothing is going to be generated');
         return;
     }
 
-    if (menuConfig.external) {
+    if (menuItem.external) {
         return;
     }
 
-    const markdownPath = Path.join(input, 'content', lang, menuItem);
+    const markdownPath = Path.join(input, 'content', lang, menuItem.content);
 
-    if (!FS.existsSync(markdownPath)) {
-        throw E.MARKDOWN_NOT_FOUND(markdownPath);
-    }
-
-    await generatePageRecursively(markdownPath, lang, globalConfig, input, Path.join(output, lang));
+    await generatePageRecursively(
+        menuItem,
+        markdownPath,
+        lang,
+        globalConfig,
+        input,
+        Path.join(output, lang)
+    );
 }
 
 /**
@@ -177,13 +190,11 @@ async function generatePages(lang: string, globalConfig: any, input: string, out
     const pathWithLang = Path.join(output, lang);
     FS.mkdirSync(pathWithLang);
 
-    const menuItems = Object.keys(globalConfig.menu || {});
-
-    if (menuItems.length === 0) {
+    if ((globalConfig.menu || []).length === 0) {
         throw E.MENU_ITEMS_NOT_FOUND;
     }
 
-    for (const item of menuItems) {
+    for (const item of globalConfig.menu) {
         await generatePage(lang, item, globalConfig, input, output);
     }
 }
@@ -263,20 +274,35 @@ export default async function generate(input: string, output: string) {
         FS.mkdirSync(output);
     }
 
-    const configFile = Path.join(input, 'config.yaml');
+    const configFile = Path.join(input, 'config.yml');
 
     if (!FS.existsSync(configFile)) {
         throw E.CONFIG_FILE_NOT_FOUND;
     }
 
-    const globalConfig = YAML.parse(FS.readFileSync(configFile, 'utf8'));
+    const themeConfigFile = Path.join(input, 'theme', 'theme.yml');
 
+    if (!FS.existsSync(themeConfigFile)) {
+        throw E.THEME_CONFIG_FILE_NOT_FOUND;
+    }
+
+    const globalConfig = YAML.parse(FS.readFileSync(configFile, 'utf8'));
+    const themeConfig = YAML.parse(FS.readFileSync(themeConfigFile, 'utf8'));
     const { config = {} } = globalConfig;
 
     const langs: string[] = (config.langs || []);
     if (langs.length === 0) {
         throw E.LANGUAGES_NOT_FOUND;
     }
+
+    const allLangsAreSupportedByTheTheme = langs.every(l =>
+        (themeConfig.supportedLanguages || []).indexOf(l) !== -1);
+
+    if (!allLangsAreSupportedByTheTheme) {
+        throw E.THEME_UNSUPPORTED_LANGUAGES;
+    }
+
+    globalConfig.themeConfig = themeConfig;
 
     for (const lang of langs) {
         await generatePages(lang, globalConfig, input, output);
