@@ -89,6 +89,7 @@ async function generatePageRecursively(
             menu: globalConfig.menu,
             content: contentInfo,
             subpages: menuItem.submenus || [],
+            root: config.rootPath || '',
             meta: _.merge(
                 {},
                 config.meta,

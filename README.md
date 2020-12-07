@@ -91,6 +91,7 @@ Here is a simple `config.yaml` file:
 
 ```yaml
 config:
+    rootPath: ''
     langs: 
         - en
         - fr
@@ -144,6 +145,7 @@ The `config` section is divided into:
 3. `defaultPage`: The default page of your website (it should match one of your menu item).
 4. `meta`: The meta tags for your website.
 5. `scripts`: Optional list of JS scripts. 
+6. `rootPath`: When hosting your website under a subdirectory (useful for Gitlab pages or Github pages). This is optional. 
 
 *Meta*
 
